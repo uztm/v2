@@ -1,0 +1,120 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.env
+.venv
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables
+*.env
+.env.*
+
+# Logs
+*.log
+*.out
+*.err
+
+# Unit test / coverage reports
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.cache
+.pytest_cache/
+.junit/
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb#
+
+# mypy / type check
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.nfs*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Backup files
+*.bak
+*.swp
+*.swo
+*.tmp
+*.temp
+
+# Local database / cache files
+*.sqlite3
+*.db
+*.sqlite
+*.tar
+*.zip
+
+# Node.js (agar frontend ham bo‘lsa)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp.*
+.pnp
+
+# Other
+*.pid
+*.seed
+*.lock
