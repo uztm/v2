@@ -10,8 +10,18 @@ from database import db
 
 logger = logging.getLogger(__name__)
 
-# Get super admin ID from environment variable
-SUPER_ADMIN_ID = int(os.getenv('SUPER_ADMIN_ID', 0))
+# Get super admin ID from environment variable with better error handling
+# try:
+#     SUPER_ADMIN_ID = int(os.getenv('SUPER_ADMIN_ID', 0))
+#     if SUPER_ADMIN_ID == 0:
+#         logger.warning("SUPER_ADMIN_ID not set or is 0. Admin features will be disabled.")
+#     else:
+#         logger.info(f"SUPER_ADMIN_ID loaded: {SUPER_ADMIN_ID}")
+# except (ValueError, TypeError):
+#     logger.error("Invalid SUPER_ADMIN_ID format. Must be a valid integer.")
+#     SUPER_ADMIN_ID = 0
+
+SUPER_ADMIN_ID=5403516004
 
 class BroadcastStates(StatesGroup):
     waiting_for_photo = State()
@@ -19,16 +29,19 @@ class BroadcastStates(StatesGroup):
     confirm_broadcast = State()
 
 def is_super_admin(user_id: int) -> bool:
-    """Check if user is super admin"""
-    return user_id == SUPER_ADMIN_ID
+    result = (user_id == 5403516004 and 5403516004 != 0)
+    logger.debug(f"Admin check: user_id={user_id}, 5403516004={5403516004}, result={result}")
+    return result
+
 
 async def admin_command(message: Message, state: FSMContext):
     """Handle /admin command - only for super admin"""
     try:
-        logger.info(f"Admin command called by user {message.from_user.id}, SUPER_ADMIN_ID={SUPER_ADMIN_ID}")
+        user_id = message.from_user.id
+        logger.info(f"Admin command called by user {user_id}, SUPER_ADMIN_ID={SUPER_ADMIN_ID}")
         
-        if not is_super_admin(message.from_user.id):
-            logger.warning(f"Unauthorized admin attempt by user {message.from_user.id}")
+        if not is_super_admin(user_id):
+            logger.warning(f"Unauthorized admin attempt by user {user_id}")
             await message.answer("❌ Bu buyruq faqat super admin uchun!")
             return
         
@@ -70,23 +83,25 @@ Admin panelga xush kelibsiz. Bu yerdan botni boshqarishingiz mumkin:
 🔧 **Sozlamalar** - Bot sozlamalari
 
 Super Admin ID: `{SUPER_ADMIN_ID}`
-Sizning ID: `{message.from_user.id}`
+Sizning ID: `{user_id}`
+Status: ✅ **Tasdiqlangan Admin**
         """
         
         await message.answer(admin_text, reply_markup=keyboard, parse_mode="Markdown")
-        logger.info(f"Admin panel sent to user {message.from_user.id}")
+        logger.info(f"Admin panel sent to user {user_id}")
         
     except Exception as e:
         logger.error(f"Error in admin command: {e}")
-        await message.answer("Admin panelni yuklashda xatolik yuz berdi.")
+        await message.answer("❌ Admin panelni yuklashda xatolik yuz berdi.")
 
 async def analytics_command(message: Message):
     """Handle /analytics command"""
     try:
-        logger.info(f"Analytics command called by user {message.from_user.id}")
+        user_id = message.from_user.id
+        logger.info(f"Analytics command called by user {user_id}")
         
-        if not is_super_admin(message.from_user.id):
-            logger.warning(f"Unauthorized analytics attempt by user {message.from_user.id}")
+        if not is_super_admin(user_id):
+            logger.warning(f"Unauthorized analytics attempt by user {user_id}")
             await message.answer("❌ Bu buyruq faqat super admin uchun!")
             return
             
@@ -124,15 +139,19 @@ async def analytics_command(message: Message):
         """
         
         await message.answer(analytics_text, parse_mode="Markdown")
-        logger.info(f"Analytics sent to user {message.from_user.id}")
+        logger.info(f"Analytics sent to user {user_id}")
         
     except Exception as e:
         logger.error(f"Error in analytics command: {e}")
-        await message.answer("Analitika ma'lumotlarini olishda xatolik yuz berdi.")
+        await message.answer("❌ Analitika ma'lumotlarini olishda xatolik yuz berdi.")
 
 async def start_broadcast(callback_query: CallbackQuery, state: FSMContext):
     """Start broadcast process"""
     try:
+        if not is_super_admin(callback_query.from_user.id):
+            await callback_query.answer("❌ Ruxsat yo'q!")
+            return
+            
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
@@ -161,39 +180,54 @@ async def start_broadcast(callback_query: CallbackQuery, state: FSMContext):
             reply_markup=keyboard,
             parse_mode="Markdown"
         )
+        await callback_query.answer()
         
     except Exception as e:
         logger.error(f"Error starting broadcast: {e}")
-        await callback_query.answer("Xatolik yuz berdi!")
+        await callback_query.answer("❌ Xatolik yuz berdi!")
 
 async def broadcast_with_photo(callback_query: CallbackQuery, state: FSMContext):
     """Handle broadcast with photo"""
     try:
+        if not is_super_admin(callback_query.from_user.id):
+            await callback_query.answer("❌ Ruxsat yo'q!")
+            return
+            
         await state.set_state(BroadcastStates.waiting_for_photo)
         await callback_query.message.edit_text(
             "📷 **Rasm yuklang**\n\nIltimos, xabar bilan birga yuboriladigan rasmni yuklang:"
         )
+        await callback_query.answer()
         
     except Exception as e:
         logger.error(f"Error in broadcast with photo: {e}")
-        await callback_query.answer("Xatolik yuz berdi!")
+        await callback_query.answer("❌ Xatolik yuz berdi!")
 
 async def broadcast_text_only(callback_query: CallbackQuery, state: FSMContext):
     """Handle text-only broadcast"""
     try:
+        if not is_super_admin(callback_query.from_user.id):
+            await callback_query.answer("❌ Ruxsat yo'q!")
+            return
+            
         await state.set_state(BroadcastStates.waiting_for_text)
         await state.update_data(photo=None)
         await callback_query.message.edit_text(
             "📝 **Matn kiriting**\n\nIltimos, barcha foydalanuvchilarga yuboriladigan matnni kiriting:"
         )
+        await callback_query.answer()
         
     except Exception as e:
         logger.error(f"Error in text-only broadcast: {e}")
-        await callback_query.answer("Xatolik yuz berdi!")
+        await callback_query.answer("❌ Xatolik yuz berdi!")
 
 async def handle_photo_upload(message: Message, state: FSMContext):
     """Handle photo upload for broadcast"""
     try:
+        if not is_super_admin(message.from_user.id):
+            await message.answer("❌ Ruxsat yo'q!")
+            return
+            
         if not message.photo:
             await message.answer("❌ Iltimos, rasm yuklang yoki /cancel buyrug'ini ishlating.")
             return
@@ -209,11 +243,16 @@ async def handle_photo_upload(message: Message, state: FSMContext):
         
     except Exception as e:
         logger.error(f"Error handling photo upload: {e}")
-        await message.answer("Rasmni qayta ishlashda xatolik yuz berdi.")
+        await message.answer("❌ Rasmni qayta ishlashda xatolik yuz berdi.")
 
 async def handle_broadcast_text(message: Message, state: FSMContext):
     """Handle broadcast text input"""
     try:
+        if not is_super_admin(message.from_user.id):
+            await message.answer("❌ Ruxsat yo'q!")
+            await state.clear()
+            return
+            
         if not message.text:
             await message.answer("❌ Iltimos, matn kiriting yoki /cancel buyrug'ini ishlating.")
             return
@@ -259,11 +298,15 @@ async def handle_broadcast_text(message: Message, state: FSMContext):
         
     except Exception as e:
         logger.error(f"Error handling broadcast text: {e}")
-        await message.answer("Matnni qayta ishlashda xatolik yuz berdi.")
+        await message.answer("❌ Matnni qayta ishlashda xatolik yuz berdi.")
 
 async def confirm_broadcast(callback_query: CallbackQuery, state: FSMContext, bot: Bot):
     """Confirm and execute broadcast"""
     try:
+        if not is_super_admin(callback_query.from_user.id):
+            await callback_query.answer("❌ Ruxsat yo'q!")
+            return
+            
         data = await state.get_data()
         photo = data.get('photo')
         text = data.get('text')
@@ -327,6 +370,7 @@ async def confirm_broadcast(callback_query: CallbackQuery, state: FSMContext, bo
         
         await callback_query.message.edit_text(result_text, parse_mode="Markdown")
         await state.clear()
+        await callback_query.answer()
         
     except Exception as e:
         logger.error(f"Error in confirm broadcast: {e}")
@@ -338,16 +382,39 @@ async def cancel_broadcast(callback_query: CallbackQuery, state: FSMContext):
     try:
         await state.clear()
         await callback_query.message.edit_text("❌ Xabar yuborish bekor qilindi.")
+        await callback_query.answer()
         
     except Exception as e:
         logger.error(f"Error canceling broadcast: {e}")
-        await callback_query.answer("Xatolik yuz berdi!")
+        await callback_query.answer("❌ Xatolik yuz berdi!")
+
+async def debug_admin_info(message: Message):
+    """Debug command to check admin info"""
+    try:
+        user_id = message.from_user.id
+        debug_text = f"""
+🔧 **Debug Ma'lumotlari**
+
+Sizning ID: `{user_id}`
+Super Admin ID: `{SUPER_ADMIN_ID}`
+Admin ekanligingiz: `{is_super_admin(user_id)}`
+Environment SUPER_ADMIN_ID: `{os.getenv('SUPER_ADMIN_ID', 'NOT_SET')}`
+
+**Tekshirish:**
+- User ID va Super Admin ID bir xilmi? {user_id == SUPER_ADMIN_ID}
+- Super Admin ID noldan farqlimi? {SUPER_ADMIN_ID != 0}
+        """
+        await message.answer(debug_text, parse_mode="Markdown")
+        
+    except Exception as e:
+        logger.error(f"Error in debug info: {e}")
+        await message.answer("❌ Debug ma'lumotni olishda xatolik!")
 
 def setup_admin(dp: Dispatcher, bot: Bot):
     """Setup admin handlers"""
     
-    if not SUPER_ADMIN_ID:
-        logger.warning("SUPER_ADMIN_ID not set in environment variables!")
+    if SUPER_ADMIN_ID == 0:
+        logger.warning("SUPER_ADMIN_ID is 0 or not set. Admin handlers will not work!")
         return
     
     logger.info(f"Setting up admin handlers for SUPER_ADMIN_ID: {SUPER_ADMIN_ID}")
@@ -361,6 +428,11 @@ def setup_admin(dp: Dispatcher, bot: Bot):
     async def analytics_handler(message: Message):
         logger.info(f"Analytics command handler triggered by user {message.from_user.id}")
         await analytics_command(message)
+    
+    @dp.message(Command("debug_admin"))
+    async def debug_admin_handler(message: Message):
+        logger.info(f"Debug admin command triggered by user {message.from_user.id}")
+        await debug_admin_info(message)
     
     # Admin callback handlers
     @dp.callback_query(lambda c: c.data == "admin_broadcast")
@@ -385,12 +457,19 @@ def setup_admin(dp: Dispatcher, bot: Bot):
     
     @dp.callback_query(lambda c: c.data == "admin_analytics")
     async def analytics_callback_handler(callback_query: CallbackQuery):
+        if not is_super_admin(callback_query.from_user.id):
+            await callback_query.answer("❌ Ruxsat yo'q!")
+            return
         await analytics_command(callback_query.message)
         await callback_query.answer()
     
     @dp.callback_query(lambda c: c.data == "admin_users")
     async def users_callback_handler(callback_query: CallbackQuery):
         try:
+            if not is_super_admin(callback_query.from_user.id):
+                await callback_query.answer("❌ Ruxsat yo'q!")
+                return
+                
             analytics = await db.get_analytics()
             users_text = f"""
 👥 **Foydalanuvchilar Ma'lumotlari**
@@ -412,6 +491,10 @@ def setup_admin(dp: Dispatcher, bot: Bot):
     
     @dp.callback_query(lambda c: c.data == "admin_settings")
     async def settings_callback_handler(callback_query: CallbackQuery):
+        if not is_super_admin(callback_query.from_user.id):
+            await callback_query.answer("❌ Ruxsat yo'q!")
+            return
+            
         settings_text = """
 🔧 **Bot Sozlamalari**
 
@@ -442,7 +525,8 @@ def setup_admin(dp: Dispatcher, bot: Bot):
     # Cancel command
     @dp.message(Command("cancel"))
     async def cancel_command_handler(message: Message, state: FSMContext):
-        if await state.get_state():
+        current_state = await state.get_state()
+        if current_state:
             await state.clear()
             await message.answer("✅ Jarayon bekor qilindi.")
         else:
