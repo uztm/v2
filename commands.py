@@ -51,31 +51,31 @@ Men guruhingizni spam xabarlardan himoya qilaman:
         logger.error(f"Error in start command: {e}")
         await message.answer("Xatolik yuz berdi. Iltimos qayta urinib ko'ring.")
 
-async def help_command(message: Message):
-    """Handle /help command"""
-    try:
-        help_text = """
-📖 **Yordam - Bot funksiyalari**
+# async def help_command(message: Message):
+#     """Handle /help command"""
+#     try:
+#         help_text = """
+# 📖 **Yordam - Bot funksiyalari**
 
-🔒 **Anti-spam himoya:**
-• HTTP/HTTPS linklar o'chiriladi
-• Domenlar (.com, .net, .org va boshqalar) o'chiriladi
-• t.me linklari o'chiriladi
-• Notanish @mention lar nazorat qilinadi
+# 🔒 **Anti-spam himoya:**
+# • HTTP/HTTPS linklar o'chiriladi
+# • Domenlar (.com, .net, .org va boshqalar) o'chiriladi
+# • t.me linklari o'chiriladi
+# • Notanish @mention lar nazorat qilinadi
 
-⚙️ **Avtomatik tozalash:**
-• Guruhga qo'shilish xabarlari o'chiriladi
-• Guruhdan chiqish xabarlari o'chiriladi
+# ⚙️ **Avtomatik tozalash:**
+# • Guruhga qo'shilish xabarlari o'chiriladi
+# • Guruhdan chiqish xabarlari o'chiriladi
 
-👮 **Admin huquqlari kerak:**
-• Xabarlarni o'chirish
-• Foydalanuvchilarni cheklash
+# 👮 **Admin huquqlari kerak:**
+# • Xabarlarni o'chirish
+# • Foydalanuvchilarni cheklash
 
-❓ **Savollar bormi?**
-@tmbekzod ga murojaat qiling
-        """
+# ❓ **Savollar bormi?**
+# @tmbekzod ga murojaat qiling
+#         """
         
-        await message.answer(help_text, parse_mode="Markdown")
+#         await message.answer(help_text, parse_mode="Markdown")
         
     except Exception as e:
         logger.error(f"Error in help command: {e}")
