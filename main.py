@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 from commands import setup_commands
 from linkdetector import setup_link_detector
-from joinremover import setup_join_remover, initialize_existing_chats_monitoring
+from joinremover import setup_join_remover
 from admin import setup_admin
 from database import db
 
@@ -98,7 +98,7 @@ def setup_activity_tracking(dp: Dispatcher):
         await track_user_activity(message)
         logger.debug(f"Private activity tracked for user {message.from_user.id if message.from_user else 'N/A'}")
 
-async def on_startup(bot: Bot, dp: Dispatcher):
+async def on_startup():
     """Actions to perform on bot startup"""
     logger.info("🚀 Bot is starting up...")
     
@@ -110,13 +110,6 @@ async def on_startup(bot: Bot, dp: Dispatcher):
         logger.error(f"❌ Failed to initialize database: {e}")
         raise
     
-    # Initialize monitoring for existing chats
-    try:
-        await initialize_existing_chats_monitoring(bot, dp)
-        logger.info("✅ Existing chats monitoring initialized")
-    except Exception as e:
-        logger.error(f"❌ Failed to initialize existing chats monitoring: {e}")
-    
     logger.info("✅ Bot startup completed successfully")
 
 async def on_shutdown():
@@ -125,13 +118,13 @@ async def on_shutdown():
     logger.info("✅ Bot shutdown completed")
 
 async def main():
+    # Perform startup actions
+    await on_startup()
+    
     # Initialize bot and dispatcher
     bot = Bot(token=BOT_TOKEN)
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
-    
-    # Perform startup actions
-    await on_startup(bot, dp)
     
     # Setup handlers in order of priority
     logger.info("🔧 Setting up handlers...")
