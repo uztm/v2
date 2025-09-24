@@ -3,7 +3,6 @@ aiogram==3.17.0
 
 # Database
 aiosqlite==0.20.0
-sqlite3-binary==0.0.1  # optional fallback, sqlite is usually built-in
 
 # Excel export
 openpyxl==3.1.5
