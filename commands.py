@@ -72,7 +72,7 @@ async def help_command(message: Message):
 • Foydalanuvchilarni cheklash
 
 ❓ **Savollar bormi?**
-@tmbekzod ga murojaat qiling
+@your_support_username ga murojaat qiling
         """
         
         await message.answer(help_text, parse_mode="Markdown")
